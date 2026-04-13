@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Injuries – Premier League DB{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="bi bi-bandaid-fill text-warning me-2"></i>Injury Records</h2>
+
+<!-- Add Injury Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-warning text-dark fw-bold">
+        <i class="bi bi-plus-circle me-2"></i>Record New Injury
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('add_injury') }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Player *</label>
+                    <select name="player_id" class="form-select" required>
+                        <option value="">Select player...</option>
+                        {% for p in all_players %}
+                        <option value="{{ p.player_id }}">{{ p.first_name }} {{ p.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Injury Type *</label>
+                    <input type="text" name="injury_type" class="form-control"
+                           placeholder="e.g. Hamstring Strain" required/>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Start Date *</label>
+                    <input type="date" name="start_date" class="form-control" required/>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">End Date</label>
+                    <input type="date" name="end_date" class="form-control"/>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label fw-semibold">Missed</label>
+                    <input type="number" name="matches_missed" class="form-control" min="0" value="0"/>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-warning text-dark w-100">
+                        <i class="bi bi-save"></i> Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+{% set active = injuries | selectattr('status','equalto','Active') | list %}
+{% set recovered = injuries | selectattr('status','equalto','Recovered') | list %}
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-danger text-center shadow-sm">
+            <div class="card-body py-3">
+                <div class="fs-2 fw-bold text-danger">{{ active|length }}</div>
+                <div class="text-muted">Currently Injured</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-success text-center shadow-sm">
+            <div class="card-body py-3">
+                <div class="fs-2 fw-bold text-success">{{ recovered|length }}</div>
+                <div class="text-muted">Recovered</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning text-center shadow-sm">
+            <div class="card-body py-3">
+                <div class="fs-2 fw-bold text-warning">
+                    {{ injuries | sum(attribute='matches_missed') }}
+                </div>
+                <div class="text-muted">Total Matches Missed</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Injury Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white fw-bold">
+        All Injury Records <span class="badge bg-secondary ms-2">{{ injuries|length }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Player</th>
+                        <th>Position</th>
+                        <th>Club</th>
+                        <th>Injury Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th class="text-center">Missed</th>
+                        <th class="text-center">Days</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in injuries %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('player_detail', player_id=i.player_id) }}"
+                               class="text-decoration-none fw-semibold">{{ i.player }}</a>
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if i.position=='Goalkeeper' %}bg-warning text-dark
+                                {% elif i.position=='Defender' %}bg-primary
+                                {% elif i.position=='Midfielder' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ i.position }}
+                            </span>
+                        </td>
+                        <td class="text-muted small">{{ i.club or '—' }}</td>
+                        <td class="fw-semibold">{{ i.injury_type }}</td>
+                        <td class="small text-muted">{{ i.start_date }}</td>
+                        <td class="small text-muted">{{ i.end_date or '—' }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-danger">{{ i.matches_missed }}</span>
+                        </td>
+                        <td class="text-center text-muted small">{{ i.days_injured }}</td>
+                        <td class="text-center">
+                            {% if i.status == 'Active' %}
+                                <span class="badge bg-danger">Active</span>
+                            {% else %}
+                                <span class="badge bg-success">Recovered</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="9" class="text-center text-muted py-4">No injuries found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

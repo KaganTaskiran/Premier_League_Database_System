@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Premier League DB{% endblock %}
+
+{% block content %}
+<!-- Season Selector -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-trophy-fill text-warning me-2"></i>{{ season }} Season Dashboard
+    </h2>
+    <div class="d-flex gap-1 flex-wrap">
+        {% for s in all_seasons %}
+        <a href="/?season={{ s.season }}"
+           class="btn btn-sm {% if s.season == season %}btn-pl-purple{% else %}btn-outline-secondary{% endif %}">
+            {{ s.season }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Champions Banner -->
+{% if champions %}
+<div class="card shadow-sm mb-4 border-warning">
+    <div class="card-header bg-warning text-dark fw-bold">
+        <i class="bi bi-trophy-fill me-2"></i>10-Season Title Count (2015/16 – 2024/25)
+    </div>
+    <div class="card-body py-2">
+        <div class="d-flex flex-wrap gap-3">
+            {% for ch in champions %}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-pl-purple fs-6">{{ ch.titles }}x</span>
+                <span class="fw-semibold">{{ ch.club }}</span>
+                <small class="text-muted">({{ ch.seasons }})</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+    <!-- League Table -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-pl-purple text-white fw-bold">
+                <i class="bi bi-list-ol me-2"></i>League Table
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0 align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>Club</th>
+                                <th class="text-center">P</th>
+                                <th class="text-center">W</th>
+                                <th class="text-center">D</th>
+                                <th class="text-center">L</th>
+                                <th class="text-center">GF</th>
+                                <th class="text-center">GA</th>
+                                <th class="text-center">GD</th>
+                                <th class="text-center fw-bold">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in standings %}
+                            <tr class="{% if loop.index <= 4 %}table-success{% elif loop.index == 5 %}table-warning{% elif loop.index >= 8 %}table-danger{% endif %}">
+                                <td class="text-center fw-bold">{{ row.pos }}</td>
+                                <td>
+                                    <a href="{{ url_for('club_detail', club_id=row.club_id) }}"
+                                       class="text-decoration-none fw-semibold">
+                                        {{ row.club }}
+                                    </a>
+                                </td>
+                                <td class="text-center">{{ row.played }}</td>
+                                <td class="text-center">{{ row.won }}</td>
+                                <td class="text-center">{{ row.drawn }}</td>
+                                <td class="text-center">{{ row.lost }}</td>
+                                <td class="text-center">{{ row.gf }}</td>
+                                <td class="text-center">{{ row.ga }}</td>
+                                <td class="text-center">{{ '+' if row.gd > 0 else '' }}{{ row.gd }}</td>
+                                <td class="text-center fw-bold">{{ row.pts }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-muted small">
+                <span class="badge bg-success me-1">&nbsp;</span> Champions League &nbsp;
+                <span class="badge bg-warning text-dark me-1">&nbsp;</span> Europa League &nbsp;
+                <span class="badge bg-danger me-1">&nbsp;</span> Relegation Zone
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-5">
+        <!-- Top Scorers -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-danger text-white fw-bold">
+                <i class="bi bi-bullseye me-2"></i>Top Scorers
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>Club</th>
+                            <th class="text-center">G</th>
+                            <th class="text-center">A</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in top_scorers %}
+                        <tr>
+                            <td class="text-muted">{{ loop.index }}</td>
+                            <td>
+                                <a href="{{ url_for('player_detail', player_id=p.player_id) }}"
+                                   class="text-decoration-none">{{ p.player }}</a>
+                            </td>
+                            <td class="text-muted small">{{ p.club }}</td>
+                            <td class="text-center fw-bold text-danger">{{ p.goals }}</td>
+                            <td class="text-center text-primary">{{ p.assists }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Matches -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white fw-bold">
+                <i class="bi bi-calendar-check me-2"></i>Recent Matches
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        {% for m in recent_matches %}
+                        <tr>
+                            <td class="text-end small">{{ m.home_club }}</td>
+                            <td class="text-center fw-bold">
+                                <span class="badge bg-secondary">{{ m.home_score }} – {{ m.away_score }}</span>
+                            </td>
+                            <td class="text-start small">{{ m.away_club }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer text-end">
+                <a href="{{ url_for('matches') }}" class="btn btn-sm btn-outline-dark">All Matches</a>
+            </div>
+        </div>
+
+        <!-- Active Injuries -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark fw-bold">
+                <i class="bi bi-bandaid-fill me-2"></i>Active Injuries
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Player</th>
+                            <th>Club</th>
+                            <th>Type</th>
+                            <th class="text-center">Days</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in active_injuries %}
+                        <tr>
+                            <td class="small">{{ i.player_name }}</td>
+                            <td class="small text-muted">{{ i.club }}</td>
+                            <td class="small">{{ i.injury_type }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-danger">{{ i.days_injured }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Nav Cards -->
+<div class="row g-3 mt-2">
+    <div class="col-md-3">
+        <a href="{{ url_for('clubs') }}" class="card text-decoration-none quick-card">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-shield-fill fs-1 text-pl-purple"></i>
+                <p class="mt-2 mb-0 fw-semibold">Clubs</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('players') }}" class="card text-decoration-none quick-card">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-person-fill fs-1 text-success"></i>
+                <p class="mt-2 mb-0 fw-semibold">Players</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('transfers') }}" class="card text-decoration-none quick-card">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-arrow-left-right fs-1 text-primary"></i>
+                <p class="mt-2 mb-0 fw-semibold">Transfers</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('analytical_queries') }}" class="card text-decoration-none quick-card">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-database-fill fs-1 text-danger"></i>
+                <p class="mt-2 mb-0 fw-semibold">SQL Queries</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

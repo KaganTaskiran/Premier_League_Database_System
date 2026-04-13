@@ -1,0 +1,124 @@
+/* ============================================================
+   Premier League DB – Custom Styles
+   SE 2230: Database Systems – Yaşar University 2026
+   ============================================================ */
+
+:root {
+    --pl-purple: #37003c;
+    --pl-green:  #00ff85;
+}
+
+/* ── Global ── */
+body {
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Navbar ── */
+.bg-pl-purple  { background-color: var(--pl-purple) !important; }
+.text-pl-purple { color: var(--pl-purple) !important; }
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255,255,255,.8);
+    border-radius: 6px;
+    padding: 6px 12px;
+    transition: background .2s, color .2s;
+}
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    background: var(--pl-green);
+    color: var(--pl-purple) !important;
+    font-weight: 600;
+}
+
+/* ── Button ── */
+.btn-pl-purple {
+    background-color: var(--pl-purple);
+    color: #fff;
+    border: none;
+}
+.btn-pl-purple:hover {
+    background-color: #55006b;
+    color: #fff;
+}
+
+/* ── Cards ── */
+.card {
+    border: none;
+    border-radius: 10px;
+}
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-size: .95rem;
+}
+
+/* Club cards hover lift */
+.club-card {
+    transition: transform .2s, box-shadow .2s;
+}
+.club-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12) !important;
+}
+
+/* Quick nav cards on dashboard */
+.quick-card {
+    border-radius: 10px;
+    transition: transform .2s, box-shadow .2s;
+    border: 1px solid #dee2e6;
+}
+.quick-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.1);
+}
+.quick-card .card-body p { color: #333; }
+
+/* ── Tables ── */
+.table-hover tbody tr:hover {
+    background-color: rgba(55, 0, 60, .04);
+}
+thead.table-dark th {
+    background-color: #1a1a2e !important;
+    color: #fff;
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+
+/* Promotion/relegation row colours in league table */
+.table-success td { border-left: 4px solid #198754; }
+.table-warning td { border-left: 4px solid #ffc107; }
+.table-danger  td { border-left: 4px solid #dc3545; }
+
+/* ── Stat boxes (club detail) ── */
+.stat-box {
+    border: 1px solid #dee2e6;
+    transition: box-shadow .2s;
+}
+.stat-box:hover { box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+
+/* ── Code blocks (queries page) ── */
+pre {
+    font-size: .78rem;
+    line-height: 1.55;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+/* ── Progress bars ── */
+.progress { background-color: #e9ecef; border-radius: 4px; }
+.progress-bar.bg-pl-purple { background-color: var(--pl-purple) !important; }
+
+/* ── Footer ── */
+footer { font-size: .8rem; }
+
+/* ── Badges ── */
+.badge { font-weight: 600; letter-spacing: .02em; }
+
+/* ── Responsive tweaks ── */
+@media (max-width: 768px) {
+    .navbar-brand { font-size: 1rem; }
+    h2 { font-size: 1.3rem; }
+    pre { font-size: .72rem; }
+}

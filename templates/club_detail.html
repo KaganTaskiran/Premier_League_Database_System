@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}{{ club.name }} – Premier League DB{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-3 gap-3 flex-wrap">
+    <a href="{{ url_for('clubs') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    <h2 class="fw-bold mb-0"><i class="bi bi-shield-fill text-pl-purple me-2"></i>{{ club.name }}</h2>
+</div>
+
+<!-- Season Selector -->
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="fw-semibold text-muted me-1">Season:</span>
+        {% for s in all_seasons %}
+        <a href="{{ url_for('club_detail', club_id=club.club_id, season=s.season) }}"
+           class="btn btn-sm {% if s.season == season %}btn-pl-purple{% else %}btn-outline-secondary{% endif %}">
+            {{ s.season }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Club Info -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-pl-purple text-white fw-bold">Club Information</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>City:</strong> {{ club.city }}</li>
+                    <li class="list-group-item"><strong>Stadium:</strong> {{ club.stadium }}</li>
+                    <li class="list-group-item"><strong>Capacity:</strong>
+                        {% if club.capacity %}{{ "{:,}".format(club.capacity) }}{% else %}<span class="text-muted">N/A</span>{% endif %}
+                    </li>
+                    <li class="list-group-item"><strong>Founded:</strong> {{ club.founded }}</li>
+                    {% if coach %}
+                    <li class="list-group-item"><strong>Manager:</strong> {{ coach.first_name }} {{ coach.last_name }}</li>
+                    <li class="list-group-item"><strong>Nationality:</strong> {{ coach.nationality }}</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Season Stats -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white fw-bold">{{ season }} Season</div>
+            <div class="card-body">
+                {% if standings %}
+                <div class="row text-center g-2">
+                    <div class="col-4">
+                        <div class="stat-box bg-light rounded p-2">
+                            <div class="fs-4 fw-bold text-pl-purple">{{ standings.pts }}</div>
+                            <div class="small text-muted">Points</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box bg-light rounded p-2">
+                            <div class="fs-4 fw-bold text-success">{{ standings.won }}</div>
+                            <div class="small text-muted">Won</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box bg-light rounded p-2">
+                            <div class="fs-4 fw-bold text-danger">{{ standings.lost }}</div>
+                            <div class="small text-muted">Lost</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box bg-light rounded p-2">
+                            <div class="fs-4 fw-bold">{{ standings.drawn }}</div>
+                            <div class="small text-muted">Drawn</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box bg-light rounded p-2">
+                            <div class="fs-4 fw-bold text-primary">{{ standings.gf }}</div>
+                            <div class="small text-muted">Goals For</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box bg-light rounded p-2">
+                            <div class="fs-4 fw-bold text-warning">{{ standings.gd }}</div>
+                            <div class="small text-muted">Goal Diff</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">No standings data for {{ season }}.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Squad Summary -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-success text-white fw-bold">Squad Summary – {{ season }}</div>
+            <div class="card-body">
+                {% set positions = ['Goalkeeper','Defender','Midfielder','Forward'] %}
+                {% for pos in positions %}
+                    {% set count = players | selectattr('position','equalto',pos) | list | length %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge
+                            {% if pos=='Goalkeeper' %}bg-warning text-dark
+                            {% elif pos=='Defender' %}bg-primary
+                            {% elif pos=='Midfielder' %}bg-success
+                            {% else %}bg-danger{% endif %} px-3">
+                            {{ pos }}
+                        </span>
+                        <span class="fw-bold">{{ count }}</span>
+                    </div>
+                {% endfor %}
+                <hr/>
+                <div class="d-flex justify-content-between">
+                    <strong>Total Players</strong><strong>{{ players|length }}</strong>
+                </div>
+                {% if players %}
+                <hr/>
+                {% set total_goals = players | sum(attribute='season_goals') %}
+                {% set total_assists = players | sum(attribute='season_assists') %}
+                <div class="d-flex justify-content-between text-muted small">
+                    <span>Season Goals</span><span class="fw-bold text-dark">{{ total_goals }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-muted small">
+                    <span>Season Assists</span><span class="fw-bold text-dark">{{ total_assists }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Players Table -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-pl-purple text-white fw-bold">
+        <i class="bi bi-people-fill me-2"></i>{{ season }} Squad &amp; Statistics
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Nationality</th>
+                        <th class="text-center">Age</th>
+                        <th class="text-center">Apps</th>
+                        <th class="text-center">Goals</th>
+                        <th class="text-center">Assists</th>
+                        <th class="text-center">Mins</th>
+                        <th class="text-end">Value (M€)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in players %}
+                    <tr>
+                        <td class="text-muted">{{ p.jersey_number or '–' }}</td>
+                        <td>
+                            <a href="{{ url_for('player_detail', player_id=p.player_id) }}"
+                               class="text-decoration-none fw-semibold">
+                                {{ p.first_name }} {{ p.last_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if p.position=='Goalkeeper' %}bg-warning text-dark
+                                {% elif p.position=='Defender' %}bg-primary
+                                {% elif p.position=='Midfielder' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ p.position }}
+                            </span>
+                        </td>
+                        <td>{{ p.nationality or '–' }}</td>
+                        <td class="text-center">{{ p.age or '–' }}</td>
+                        <td class="text-center">{{ p.season_matches }}</td>
+                        <td class="text-center fw-bold {% if p.season_goals > 0 %}text-danger{% endif %}">
+                            {{ p.season_goals }}
+                        </td>
+                        <td class="text-center {% if p.season_assists > 0 %}text-primary{% endif %}">
+                            {{ p.season_assists }}
+                        </td>
+                        <td class="text-center text-muted small">{{ p.season_minutes or '–' }}</td>
+                        <td class="text-end">{{ '%.1f'|format(p.market_value) if p.market_value else '–' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Season Matches -->
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white fw-bold">
+        <i class="bi bi-calendar2-week-fill me-2"></i>{{ season }} Matches
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>GW</th>
+                        <th class="text-end">Home</th>
+                        <th class="text-center">Score</th>
+                        <th>Away</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in matches %}
+                    <tr>
+                        <td class="text-muted small">{{ m.match_date }}</td>
+                        <td class="text-muted small">{{ m.gameweek }}</td>
+                        <td class="text-end fw-semibold
+                            {% if m.home_club == club.name %}text-pl-purple{% endif %}">
+                            {{ m.home_club }}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary fs-6">{{ m.home_score }} – {{ m.away_score }}</span>
+                        </td>
+                        <td class="fw-semibold
+                            {% if m.away_club == club.name %}text-pl-purple{% endif %}">
+                            {{ m.away_club }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

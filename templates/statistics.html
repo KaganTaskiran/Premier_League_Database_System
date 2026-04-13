@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Statistics – Premier League DB{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-danger me-2"></i>Statistics</h2>
+    <div class="d-flex gap-2 align-items-center">
+        <span class="fw-semibold">Season:</span>
+        {% for s in seasons %}
+        <a href="?season={{ s.season }}"
+           class="btn btn-sm {% if s.season==season %}btn-danger{% else %}btn-outline-secondary{% endif %}">
+            {{ s.season }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Top Scorers -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-danger text-white fw-bold">
+                <i class="bi bi-bullseye me-2"></i>Top Scorers – {{ season }}
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th><th>Player</th><th>Club</th>
+                                <th class="text-center">MP</th>
+                                <th class="text-center">Goals</th>
+                                <th class="text-center">Ast</th>
+                                <th class="text-center">Min</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in top_scorers %}
+                            <tr>
+                                <td class="text-muted">{{ loop.index }}</td>
+                                <td>
+                                    <a href="{{ url_for('player_detail', player_id=p.player_id) }}"
+                                       class="text-decoration-none fw-semibold">{{ p.player }}</a>
+                                </td>
+                                <td class="text-muted small">{{ p.club }}</td>
+                                <td class="text-center">{{ p.matches }}</td>
+                                <td class="text-center fw-bold text-danger">{{ p.goals }}</td>
+                                <td class="text-center text-primary">{{ p.assists }}</td>
+                                <td class="text-center text-muted small">{{ p.minutes }}'</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="7" class="text-center text-muted py-3">No data.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Assisters -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white fw-bold">
+                <i class="bi bi-hand-index-thumb me-2"></i>Top Assisters – {{ season }}
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th><th>Player</th><th>Club</th>
+                                <th class="text-center">Assists</th>
+                                <th class="text-center">Goals</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in top_assisters %}
+                            <tr>
+                                <td class="text-muted">{{ loop.index }}</td>
+                                <td>
+                                    <a href="{{ url_for('player_detail', player_id=p.player_id) }}"
+                                       class="text-decoration-none fw-semibold">{{ p.player }}</a>
+                                </td>
+                                <td class="text-muted small">{{ p.club }}</td>
+                                <td class="text-center fw-bold text-primary">{{ p.assists }}</td>
+                                <td class="text-center text-danger">{{ p.goals }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-3">No data.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Club Goal Stats -->
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white fw-bold">
+        <i class="bi bi-shield-fill me-2"></i>Club Goal Statistics – {{ season }}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th><th>Club</th>
+                        <th class="text-center">Total Goals</th>
+                        <th class="text-center">Total Assists</th>
+                        <th class="text-center">Appearances</th>
+                        <th class="text-center">Goals/Match</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in club_stats %}
+                    <tr>
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td class="fw-semibold">{{ c.club }}</td>
+                        <td class="text-center fw-bold text-danger">{{ c.total_goals }}</td>
+                        <td class="text-center text-primary">{{ c.total_assists }}</td>
+                        <td class="text-center text-muted">{{ c.match_appearances }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-success">{{ c.goals_per_match }}</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted py-3">No data.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}{{ player.first_name }} {{ player.last_name }} – Premier League DB{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4 gap-3 flex-wrap">
+    <a href="{{ url_for('players') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-person-fill text-success me-2"></i>
+        {{ player.first_name }} {{ player.last_name }}
+        <span class="badge
+            {% if player.position=='Goalkeeper' %}bg-warning text-dark
+            {% elif player.position=='Defender' %}bg-primary
+            {% elif player.position=='Midfielder' %}bg-success
+            {% else %}bg-danger{% endif %} fs-6 ms-2">
+            {{ player.position }}
+        </span>
+    </h2>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Player Info -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-pl-purple text-white fw-bold">Player Profile</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Full Name:</strong> {{ player.first_name }} {{ player.last_name }}</li>
+                    <li class="list-group-item"><strong>Nationality:</strong> {{ player.nationality }}</li>
+                    <li class="list-group-item"><strong>Date of Birth:</strong> {{ player.date_of_birth }}</li>
+                    <li class="list-group-item"><strong>Age:</strong> {{ player.age }}</li>
+                    <li class="list-group-item"><strong>Position:</strong> {{ player.position }}</li>
+                    <li class="list-group-item"><strong>Jersey No:</strong> #{{ player.jersey_number }}</li>
+                    <li class="list-group-item">
+                        <strong>Club:</strong>
+                        {% if player.club_id %}
+                        <a href="{{ url_for('club_detail', club_id=player.club_id) }}" class="text-decoration-none">
+                            {{ player.club_name }}
+                        </a>
+                        {% else %}Free Agent{% endif %}
+                    </li>
+                    <li class="list-group-item"><strong>Market Value:</strong>
+                        {{ '€%.1fM'|format(player.market_value) if player.market_value else '—' }}
+                    </li>
+                    <li class="list-group-item"><strong>Contract Until:</strong> {{ player.contract_end or '—' }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Season Totals -->
+    <div class="col-md-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white fw-bold">Season Statistics</div>
+            <div class="card-body p-0">
+                {% if season_totals %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Season</th>
+                                <th class="text-center">MP</th>
+                                <th class="text-center">Goals</th>
+                                <th class="text-center">Assists</th>
+                                <th class="text-center">Yellows</th>
+                                <th class="text-center">Reds</th>
+                                <th class="text-center">Minutes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in season_totals %}
+                            <tr>
+                                <td class="fw-semibold">{{ s.season }}</td>
+                                <td class="text-center">{{ s.matches }}</td>
+                                <td class="text-center fw-bold text-danger">{{ s.goals }}</td>
+                                <td class="text-center fw-bold text-primary">{{ s.assists }}</td>
+                                <td class="text-center">
+                                    {% if s.yellows %}<span class="badge bg-warning text-dark">{{ s.yellows }}</span>{% else %}0{% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if s.reds %}<span class="badge bg-danger">{{ s.reds }}</span>{% else %}0{% endif %}
+                                </td>
+                                <td class="text-center">{{ s.minutes }}'</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4 text-muted text-center">No statistics recorded yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Match-by-Match Stats -->
+{% if stats %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-success text-white fw-bold">
+        <i class="bi bi-list-ul me-2"></i>Match-by-Match Performance
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th><th>GW</th><th>Season</th>
+                        <th>Match</th>
+                        <th class="text-center">G</th>
+                        <th class="text-center">A</th>
+                        <th class="text-center">YC</th>
+                        <th class="text-center">RC</th>
+                        <th class="text-center">Min</th>
+                        <th class="text-center">SoT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in stats %}
+                    <tr>
+                        <td class="small text-muted">{{ s.match_date }}</td>
+                        <td class="small">{{ s.gameweek }}</td>
+                        <td class="small">{{ s.season }}</td>
+                        <td class="small fw-semibold">{{ s.home_club }} {{ s.home_score }}–{{ s.away_score }} {{ s.away_club }}</td>
+                        <td class="text-center">{% if s.goals %}<span class="fw-bold text-danger">{{ s.goals }}</span>{% else %}—{% endif %}</td>
+                        <td class="text-center">{% if s.assists %}<span class="fw-bold text-primary">{{ s.assists }}</span>{% else %}—{% endif %}</td>
+                        <td class="text-center">{% if s.yellow_cards %}<span class="badge bg-warning text-dark">{{ s.yellow_cards }}</span>{% else %}—{% endif %}</td>
+                        <td class="text-center">{% if s.red_cards %}<span class="badge bg-danger">{{ s.red_cards }}</span>{% else %}—{% endif %}</td>
+                        <td class="text-center">{{ s.minutes_played }}'</td>
+                        <td class="text-center">{{ s.shots_on_target }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Transfer History -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white fw-bold">
+                <i class="bi bi-arrow-left-right me-2"></i>Transfer History
+            </div>
+            <div class="card-body p-0">
+                {% if transfers %}
+                <table class="table table-sm mb-0">
+                    <thead class="table-dark">
+                        <tr><th>Date</th><th>From</th><th>To</th><th class="text-end">Fee (M€)</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transfers %}
+                        <tr>
+                            <td class="small">{{ t.transfer_date }}</td>
+                            <td class="small">{{ t.from_club }}</td>
+                            <td class="small fw-semibold">{{ t.to_club }}</td>
+                            <td class="text-end small">{{ '%.1f'|format(t.transfer_fee) if t.transfer_fee else 'Free' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-muted text-center">No transfers recorded.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Injury History -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-warning text-dark fw-bold">
+                <i class="bi bi-bandaid-fill me-2"></i>Injury History
+            </div>
+            <div class="card-body p-0">
+                {% if injuries %}
+                <table class="table table-sm mb-0">
+                    <thead class="table-dark">
+                        <tr><th>Type</th><th>Start</th><th>End</th><th class="text-center">Missed</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for i in injuries %}
+                        <tr>
+                            <td class="small fw-semibold">{{ i.injury_type }}</td>
+                            <td class="small">{{ i.start_date }}</td>
+                            <td class="small">{{ i.end_date or 'Ongoing' }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-danger">{{ i.matches_missed }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-muted text-center">No injuries recorded.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

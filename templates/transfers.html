@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Transfers – Premier League DB{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="bi bi-arrow-left-right text-primary me-2"></i>Transfer History</h2>
+
+<!-- Add Transfer Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white fw-bold">
+        <i class="bi bi-plus-circle me-2"></i>Record New Transfer
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('add_transfer') }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Player *</label>
+                    <select name="player_id" class="form-select" required>
+                        <option value="">Select player...</option>
+                        {% for p in all_players %}
+                        <option value="{{ p.player_id }}">{{ p.first_name }} {{ p.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">From Club</label>
+                    <select name="from_club_id" class="form-select">
+                        <option value="">Free Agent</option>
+                        {% for c in all_clubs %}
+                        <option value="{{ c.club_id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">To Club *</label>
+                    <select name="to_club_id" class="form-select" required>
+                        <option value="">Select club...</option>
+                        {% for c in all_clubs %}
+                        <option value="{{ c.club_id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Transfer Date *</label>
+                    <input type="date" name="transfer_date" class="form-control" required/>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label fw-semibold">Fee (M€)</label>
+                    <input type="number" name="transfer_fee" class="form-control" step="0.1" min="0" placeholder="0.0"/>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label fw-semibold">Season</label>
+                    <input type="text" name="season" class="form-control" value="2024/25"/>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-save"></i> Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transfer Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white fw-bold">
+        All Transfers <span class="badge bg-secondary ms-2">{{ transfers|length }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Player</th>
+                        <th>Position</th>
+                        <th>Nationality</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Season</th>
+                        <th class="text-end">Fee (M€)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transfers %}
+                    <tr>
+                        <td class="text-muted small">{{ t.transfer_date }}</td>
+                        <td>
+                            <a href="{{ url_for('player_detail', player_id=t.player_id) }}"
+                               class="text-decoration-none fw-semibold">{{ t.player }}</a>
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if t.position=='Goalkeeper' %}bg-warning text-dark
+                                {% elif t.position=='Defender' %}bg-primary
+                                {% elif t.position=='Midfielder' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ t.position }}
+                            </span>
+                        </td>
+                        <td class="small text-muted">{{ t.nationality }}</td>
+                        <td class="text-muted small">{{ t.from_club }}</td>
+                        <td class="fw-semibold">{{ t.to_club }}</td>
+                        <td class="small">{{ t.season or '—' }}</td>
+                        <td class="text-end">
+                            {% if t.transfer_fee %}
+                                <span class="badge bg-success fs-6">€{{ '%.1f'|format(t.transfer_fee) }}M</span>
+                            {% else %}
+                                <span class="text-muted">Free</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">No transfers found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
